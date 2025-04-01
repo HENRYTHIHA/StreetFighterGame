@@ -1,0 +1,126 @@
+import simplegui 
+
+BACKGROUND_IMAGE = simplegui.load_image("https://i.imgur.com/MbLz1Ih.jpg") 
+PLAYER_IMAGE = simplegui.load_image("https://i.imgur.com/1z9KT51.png")
+ENEMY_IMAGE = simplegui.load_image("https://i.imgur.com/QpU2F8N.png") 
+
+WIDTH, HEIGHT = 768, 224
+
+
+player_name = "Player"
+enemy1_name = "Enemy 1"
+enemy2_name = "Enemy 2"
+player_health = 100
+enemy1_health = 100
+enemy2_health = 100
+player_pos = [100, HEIGHT - 100]
+enemy1_pos = [WIDTH - 100, HEIGHT - 100] 
+enemy2_pos = [WIDTH - 150, HEIGHT - 100]
+current_round = 1
+show_vs_screen = True
+vs_screen_timer = 0
+
+
+def start_name_input():
+    global player_name, enemy1_name, enemy2_name
+    player_name = input("Enter your fighter's name: ")
+    enemy1_name = input("Enter first enemy's name: ")
+    enemy2_name = input("Enter second enemy's name: ")
+
+def draw(canvas): 
+    if BACKGROUND_IMAGE.get_width() > 0:
+        canvas.draw_image(BACKGROUND_IMAGE, 
+                        (BACKGROUND_IMAGE.get_width()/2, BACKGROUND_IMAGE.get_height()/2), 
+                        (BACKGROUND_IMAGE.get_width(), BACKGROUND_IMAGE.get_height()), 
+                        (WIDTH/2, HEIGHT/2), 
+                        (WIDTH, HEIGHT))
+    else:
+        canvas.draw_polygon([[0,0], [WIDTH,0], [WIDTH,HEIGHT], [0,HEIGHT]], 
+                          1, "Black", "LightBlue")
+    
+
+    if show_vs_screen:
+        canvas.draw_text(f"ROUND {current_round}", (WIDTH/2 - 50, 50), 30, "White", "sans-serif")
+        canvas.draw_text("VS", (WIDTH/2 - 20, HEIGHT/2), 60, "Red", "sans-serif")
+        canvas.draw_text(f"{player_name}", (WIDTH/4 - 50, HEIGHT/2 + 50), 20, "Blue", "sans-serif")
+        canvas.draw_text(f"{enemy1_name} & {enemy2_name}", (3*WIDTH/4 - 100, HEIGHT/2 + 50), 20, "Red", "sans-serif")
+        return
+    
+    canvas.draw_text(player_name, (50, 15), 12, "White", "sans-serif")
+    canvas.draw_line((50, 20), (150, 20), 12, "Black")
+    canvas.draw_line((50, 20), (50 + player_health, 20), 10, "Green")
+    
+    canvas.draw_text(enemy1_name, (WIDTH-150, 15), 12, "White", "sans-serif")
+    canvas.draw_line((WIDTH-150, 20), (WIDTH-50, 20), 12, "Black")
+    canvas.draw_line((WIDTH-50 - enemy1_health, 20), (WIDTH-50, 20), 10, "Red")
+    
+
+    canvas.draw_text(enemy2_name, (WIDTH-150, 35), 12, "White", "sans-serif")
+    canvas.draw_line((WIDTH-150, 40), (WIDTH-50, 40), 12, "Black")
+    canvas.draw_line((WIDTH-50 - enemy2_health, 40), (WIDTH-50, 40), 10, "Orange")
+    
+
+    canvas.draw_text(f"ROUND {current_round}", (WIDTH/2 - 40, 30), 20, "White", "sans-serif")
+    
+
+    if PLAYER_IMAGE.get_width() > 0:
+        canvas.draw_image(PLAYER_IMAGE, 
+                        (PLAYER_IMAGE.get_width()/2, PLAYER_IMAGE.get_height()/2),
+                        (PLAYER_IMAGE.get_width(), PLAYER_IMAGE.get_height()),
+                        player_pos, 
+                        (80, 80))
+    else:
+        canvas.draw_circle(player_pos, 30, 2, "Blue", "LightBlue")
+    
+    if ENEMY_IMAGE.get_width() > 0:
+        canvas.draw_image(ENEMY_IMAGE, 
+                        (ENEMY_IMAGE.get_width()/2, ENEMY_IMAGE.get_height()/2),
+                        (ENEMY_IMAGE.get_width(), ENEMY_IMAGE.get_height()),
+                        enemy1_pos, 
+                        (80, 80))
+        canvas.draw_image(ENEMY_IMAGE, 
+                        (ENEMY_IMAGE.get_width()/2, ENEMY_IMAGE.get_height()/2),
+                        (ENEMY_IMAGE.get_width(), ENEMY_IMAGE.get_height()),
+                        enemy2_pos, 
+                        (60, 60))
+    else:
+        canvas.draw_circle(enemy1_pos, 30, 2, "Red", "Pink")
+        canvas.draw_circle(enemy2_pos, 25, 2, "Orange", "Yellow")
+
+def keydown(key):
+    global player_pos, show_vs_screen, vs_screen_timer
+    
+    if show_vs_screen:
+        show_vs_screen = False
+        return
+    
+
+    if key == simplegui.KEY_MAP["left"] and player_pos[0] > 50: 
+        player_pos[0] -= 10
+    elif key == simplegui.KEY_MAP["right"] and player_pos[0] < WIDTH - 50: 
+        player_pos[0] += 10 
+    elif key == simplegui.KEY_MAP['up'] and player_pos[1] > 50:
+        player_pos[1] -= 10 
+    elif key == simplegui.KEY_MAP['down'] and player_pos[1] < HEIGHT - 50: 
+        player_pos[1] += 10
+    elif key == simplegui.KEY_MAP['space']:
+        pass 
+
+def timer_handler():
+    global show_vs_screen, vs_screen_timer
+    if show_vs_screen:
+        vs_screen_timer += 1
+        if vs_screen_timer > 100: 
+            show_vs_screen = False
+
+start_name_input()
+
+frame = simplegui.create_frame("Street Fighter Game", WIDTH, HEIGHT) 
+frame.set_draw_handler(draw)
+frame.set_keydown_handler(keydown) 
+
+
+timer = simplegui.create_timer(30, timer_handler)
+timer.start()
+
+frame.start()                                                   
